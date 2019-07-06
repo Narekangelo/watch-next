@@ -1,41 +1,12 @@
-// ==UserScript==
-// @name         Watch next
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  try to take over the world!
-// @author       You
-// @match        https://www.youtube.com/*
-// @grant        none
-// ==/UserScript==
-
-const css = `
-       button.watch-next {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            width: 30px;
-            height: 20px;
-            border-radius: 20%;
-        }
-
-       button.watch-next[watch-next=true] {
-            background-color: #008CBA; /* BLUE */
-       }
-`;
-
-document.querySelector('head').innerHTML += '<style>' + css + '</style>';
-
 let count = 0;
 let mouseStatus = 'up';
 let mouseTimeout;
 let addedMouseEvent = false;
-let videoPosition = document.querySelector('.ytp-scrubber-container');
 
-// Video Position Element check
-let videoPositionMouseEvent = () => {
+// Add mouse status checker
+const addMouseStatusChecker = () => {
+    let videoPosition = document.querySelector('.ytp-scrubber-container');
+
     if(videoPosition && !addedMouseEvent) {
         addedMouseEvent = true;
 
@@ -44,7 +15,7 @@ let videoPositionMouseEvent = () => {
             mouseStatus = 'down';
             mouseTimeout = setTimeout(() => {
                 mouseStatus = 'longDown';
-                doSpecialStuffBecauseOfLongDown(); // put your secret sauce here
+                doSpecialStuffBecauseOfLongDown();
             }, 1500);
         }, false);
 
@@ -56,7 +27,7 @@ let videoPositionMouseEvent = () => {
 }
 
 // Check event and update location
-let eventCheck = () => {
+const changeLocation = () => {
     if(document.querySelector('video')) {
         let current = document.querySelector('span.ytp-time-current').textContent;
         let duration = document.querySelector('span.ytp-time-duration').textContent;
@@ -69,44 +40,47 @@ let eventCheck = () => {
 }
 
 // Button click event
-let btnClick = (event) => {
+const btnClick = (event) => {
     let button = event.target;
 
-    if(button.getAttribute("watch-next") == 'false') {
+    if(button.getAttribute('watch-next') == 'false') {
         let buttons = document.querySelectorAll('button.watch-next');
         for (let btn of buttons) {
-            btn.setAttribute("watch-next", "false");
+            btn.setAttribute('watch-next', 'false');
         }
 
-        button.setAttribute("watch-next", "true");
+        button.setAttribute('watch-next', 'true');
+    } else {
+        button.setAttribute('watch-next', 'false');
     }
 }
 
 // Add buttons
-let appendButtons = (items) => {
+const appendButtons = (items) => {
     for (let item of items) {
         let div = item.querySelector('div#dismissable > .metadata');
         if(!div.querySelector('button.watch-next')) {
-            let newSpan = document.createElement('BUTTON');
+            let button = document.createElement('BUTTON');
+            let span = document.createElement('SPAN');
             let textnode = document.createTextNode('>');
-            newSpan.appendChild(textnode);
+
+            button.appendChild(textnode);
 
             let link = div.querySelector('a');
-            div.insertBefore(newSpan, link);
+            div.insertBefore(button, link);
 
-            newSpan.setAttribute('class', 'watch-next');
-            newSpan.setAttribute('watch-next', 'false');
-            newSpan.addEventListener('click', btnClick);
+            button.setAttribute('class', 'watch-next');
+            button.setAttribute('watch-next', 'false');
+            button.addEventListener('click', btnClick);
         }
     }
 }
 
 // Init
-let init = () => {
-    if(document.querySelector('video')) {
+const init = () => {
+    if (document.querySelector('video')) {
         let items = document.querySelectorAll('#columns #related #items ytd-compact-video-renderer.ytd-watch-next-secondary-results-renderer');
-
-        videoPositionMouseEvent();
+        addMouseStatusChecker();
 
         if(!document.querySelector('input[type=hidden].watch-next')) {
             let input = document.createElement('INPUT');
@@ -124,9 +98,5 @@ let init = () => {
     }
 }
 
-(function() {
-    'use strict';
-    setInterval(init, 1000);
-    setInterval(eventCheck, 1000);
-})();
-
+setInterval(init, 1000);
+setInterval(changeLocation, 1000);

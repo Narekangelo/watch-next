@@ -1,28 +1,24 @@
 button.watch-next {
-    background-image: linear-gradient(to right, #FF5D3D , #FE2B68);
+    background: linear-gradient(to right, #FF5D3D , #FE2B68);
     border: none;
-    color: #fff;
+    color: white;
+    width: 45px;
     text-align: center;
     text-decoration: none;
-    display: block;
-    width: 35px;
-    height: 22px;
-    border-radius: 20%;
-    padding: 5px;
+    border-radius: 0.5rem;
+    padding: 5px 12px;
 }
 
 button.watch-next[watch-next=true] {
-    background-image: linear-gradient(to right, #1E65F0 , #26CDFF);
+    background: linear-gradient(to right, #1E65F0 , #26CDFF);
 }
 
 button.watch-next:focus {
     outline: none;
 }
 
-/* button.watch-next > span {
-    background: url(https://svgshare.com/i/Dw4.svg) no-repeat;
-    cursor: pointer;
+button.watch-next > img {
+    /* width: 100%; */
+    max-width: 22px;
     display: block;
-    height: 20px;
-    width: 22px;
-} */
+}

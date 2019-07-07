@@ -2,6 +2,9 @@ let count = 0;
 let mouseStatus = 'up';
 let mouseTimeout;
 let addedMouseEvent = false;
+let windowLocation = window.location.href;
+const buttonIcon = 'https://svgshare.com/i/Dw4.svg';
+const youtubeUrl = 'https://www.youtube.com';
 
 // Add mouse status checker
 const addMouseStatusChecker = () => {
@@ -26,22 +29,42 @@ const addMouseStatusChecker = () => {
     }
 }
 
+// Change location
+const changeLocation = (button = null) => {
+    if (!button) {
+        button = document.querySelector('button.watch-next[watch-next=true]');
+    }
+
+    if (button) {
+        window.location.href = youtubeUrl + button.parentElement.querySelector('a').getAttribute('href');
+    }
+}
+
 // Check event and update location
-const changeLocation = () => {
+const checkVideoEnd = () => {
     if(document.querySelector('video')) {
         let current = document.querySelector('span.ytp-time-current').textContent;
         let duration = document.querySelector('span.ytp-time-duration').textContent;
         let button = document.querySelector('button.watch-next[watch-next=true]');
         if(current == duration && button && mouseStatus == 'up') {
-            let link = 'https://www.youtube.com' + button.parentElement.querySelector('a').getAttribute('href');
-            window.location.href = link;
+           changeLocation(button);
         }
+    }
+}
+
+// Hotkey Ctrl + B
+const nextHotKey = (event) => {
+    if (event.altKey && event.keyCode == 78) {
+        changeLocation();
     }
 }
 
 // Button click event
 const btnClick = (event) => {
     let button = event.target;
+    if (button.tagName.toLowerCase() != 'button') {
+        button = button.parentElement;
+    }
 
     if(button.getAttribute('watch-next') == 'false') {
         let buttons = document.querySelectorAll('button.watch-next');
@@ -61,17 +84,16 @@ const appendButtons = (items) => {
         let div = item.querySelector('div#dismissable > .metadata');
         if(!div.querySelector('button.watch-next')) {
             let button = document.createElement('BUTTON');
-            let span = document.createElement('SPAN');
-            let textnode = document.createTextNode('>');
-
-            button.appendChild(textnode);
-
-            let link = div.querySelector('a');
-            div.insertBefore(button, link);
+            let img = document.createElement('IMG');
+            img.setAttribute('src', buttonIcon)
 
             button.setAttribute('class', 'watch-next');
             button.setAttribute('watch-next', 'false');
             button.addEventListener('click', btnClick);
+            button.appendChild(img);
+
+            let link = div.querySelector('a');
+            div.insertBefore(button, link);
         }
     }
 }
@@ -82,16 +104,18 @@ const init = () => {
         let items = document.querySelectorAll('#columns #related #items ytd-compact-video-renderer.ytd-watch-next-secondary-results-renderer');
         addMouseStatusChecker();
 
-        if(!document.querySelector('input[type=hidden].watch-next')) {
-            let input = document.createElement('INPUT');
-            input.setAttribute('type', 'hidden');
-            input.setAttribute('class', 'watch-next');
-            document.querySelector('head').appendChild(input);
+        if(window.location.href != windowLocation && items) {
+            for (item of items) {
+                item.parentNode.removeChild(item);
+            }
 
+            windowLocation = window.location.href;
             count = 0;
         }
 
-        if(items.length > count) {
+        let buttonsCount = document.querySelectorAll('button.watch-next').length;
+
+        if(items.length > count || buttonsCount != items.length) {
             count = items.length;
             appendButtons(items);
         }
@@ -99,4 +123,5 @@ const init = () => {
 }
 
 setInterval(init, 1000);
-setInterval(changeLocation, 1000);
+setInterval(checkVideoEnd, 1000);
+document.addEventListener('keyup', nextHotKey, false);

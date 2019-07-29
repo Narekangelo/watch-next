@@ -1,58 +1,19 @@
 let count = 0;
-let mouseStatus = 'up';
-let mouseTimeout;
-let addedMouseEvent = false;
 let windowLocation = window.location.href;
+let addedVideoEndListener = false;
 const buttonIcon = 'https://svgshare.com/i/Dw4.svg';
 const youtubeUrl = 'https://www.youtube.com';
 
-// Add mouse status checker
-const addMouseStatusChecker = () => {
-    let videoPosition = document.querySelector('.ytp-scrubber-container');
-
-    if(videoPosition && !addedMouseEvent) {
-        addedMouseEvent = true;
-
-        videoPosition.addEventListener('mousedown', () => {
-            clearTimeout(mouseTimeout);
-            mouseStatus = 'down';
-            mouseTimeout = setTimeout(() => {
-                mouseStatus = 'longDown';
-                doSpecialStuffBecauseOfLongDown();
-            }, 1500);
-        }, false);
-
-        videoPosition.addEventListener('mouseup', () => {
-            clearTimeout(mouseTimeout);
-            mouseStatus = 'up';
-        }, false);
-    }
-}
-
 // Change location
-const changeLocation = (button = null) => {
-    if (!button) {
-        button = document.querySelector('button.watch-next[watch-next=true]');
-    }
+const changeLocation = () => {
+    button = document.querySelector('button.watch-next[watch-next=true]');
 
     if (button) {
         window.location.href = youtubeUrl + button.parentElement.querySelector('a').getAttribute('href');
     }
 }
 
-// Check event and update location
-const checkVideoEnd = () => {
-    if(document.querySelector('video')) {
-        let current = document.querySelector('span.ytp-time-current').textContent;
-        let duration = document.querySelector('span.ytp-time-duration').textContent;
-        let button = document.querySelector('button.watch-next[watch-next=true]');
-        if(current == duration && button && mouseStatus == 'up') {
-           changeLocation(button);
-        }
-    }
-}
-
-// Hotkey Ctrl + B
+// Hotkey Alt + N
 const nextHotKey = (event) => {
     if (event.altKey && event.keyCode == 78) {
         changeLocation();
@@ -100,9 +61,13 @@ const appendButtons = (items) => {
 
 // Init
 const init = () => {
-    if (document.querySelector('video')) {
+    let video = document.querySelector('video');
+    if (video) {
         let items = document.querySelectorAll('#columns #related #items ytd-compact-video-renderer.ytd-watch-next-secondary-results-renderer');
-        addMouseStatusChecker();
+        
+        if (!addedVideoEndListener) {
+            video.addEventListener('ended', changeLocation);
+        }
 
         if(window.location.href != windowLocation && items) {
             for (item of items) {
@@ -123,5 +88,4 @@ const init = () => {
 }
 
 setInterval(init, 1000);
-setInterval(checkVideoEnd, 1000);
 document.addEventListener('keyup', nextHotKey, false);
